@@ -36,22 +36,17 @@ def fetchCryptoPanic() -> Optional[list[dict]]:
 
         extracted_entries.append(extracted_entry)
 
-    # Save to file
     save_json("cryptopanic.json", extracted_entries)
     return extracted_entries
 
-    # Load from saved file instead
-    # extracted_entries = load_json("cryptopanic.json")
-    # return extracted_entries
-
 
 def getCryptoPanicData():
-    newsjson = fetchCryptoPanic()
+    newsjson: Optional[list[dict]] = None
+    if os.getenv("USE_CACHE") == 1:
+        newsjson = load_json("cryptopanic.json")
+    else:
+        newsjson = fetchCryptoPanic()
+
     if newsjson is not None:
         print("cryptopanic data fetched")
-        for post in newsjson:
-            print(post["title"])
-            print(post["description"])
-            print(post["url"])
-            print(post["published_at"])
-            print("-----")
+        print(len(newsjson), "items fetched")

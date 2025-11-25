@@ -1,4 +1,7 @@
 from dotenv import load_dotenv
+
+load_dotenv()
+
 from extractors.cointelegraph import getCoinTelegraph
 from extractors.coindesk import getCoinDesk
 from extractors.newsdataio import getNewsData
@@ -6,7 +9,9 @@ from extractors.cryptopanic import getCryptoPanicData
 from extractors.reddit import getRedditData
 from extractors.yfinance import getYFinanceData
 
-load_dotenv()
+from utils.file_utils import convertToBQJSONFormat
+
+import gcloud.bq as bq
 
 
 def main():
@@ -23,6 +28,30 @@ def main():
     getYFinanceData()
     print("\nFetching Reddit data:")
     getRedditData()
+
+    filenames = [
+        "coindesk",
+        "cointelegraph",
+        "cryptopanic",
+        "newsdata",
+        "reddit_data",
+        "yfinance_news",
+        "yfinance_tickers",
+    ]
+
+    for filename in filenames:
+        infile = f"{filename}.json"
+        outfile = f"{filename}_bq.json"
+        convertToBQJSONFormat(infile, outfile)
+        print("converted ", infile, " to flat json format in ", outfile)
+
+    bq.ingestCoindesk()
+    bq.ingestCointelegraph()
+    bq.ingestCryptopanic()
+    bq.ingestNewsdata()
+    bq.ingestReddit()
+    bq.ingestYFinanceNews()
+    bq.ingestYFinanceTickers()
 
 
 if __name__ == "__main__":

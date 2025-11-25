@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 import requests as r
 from fastfeedparser import FastFeedParserDict, parse as fastfeedparse
@@ -24,15 +25,16 @@ def fetchCoinDeskNews() -> Optional[FastFeedParserDict]:
         }
         extracted_entries.append(extracted_entry)
     save_json("coindesk.json", extracted_entries)
-
-    # Load from saved file
-    # myfeed = load_json("coindesk.json")
-
     return myfeed
 
 
 def getCoinDesk():
-    ctnews = fetchCoinDeskNews()
+    ctnews = None
+    if os.getenv("USE_CACHE") == 1:
+        ctnews: Optional[FastFeedParserDict] = load_json("coindesk.json")
+    else:
+        ctnews = fetchCoinDeskNews()
+
     if ctnews is not None:
         news_entries = ctnews["entries"]
         print(f"{len(news_entries)} items from coindesk fetched")

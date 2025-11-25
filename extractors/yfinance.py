@@ -1,3 +1,4 @@
+import os
 import yfinance as yf
 from utils.file_utils import save_json, load_json
 import json
@@ -58,20 +59,20 @@ def fetchYFinance() -> tuple[list, list]:
     save_json("yfinance_tickers.json", tickerdata)
     save_json("yfinance_news.json", extracted_entries)
 
-    # Load from saved file instead
-    # extracted_entries = load_json("yfinance_news.json")
-
-    # if extracted_entries is None:
-    #     extracted_entries = []
-    # tickerdata = load_json("yfinance_tickers.json")
-
-    # if tickerdata is None:
-    #     tickerdata = []
-
     return extracted_entries, tickerdata
 
 
 def getYFinanceData():
+    if os.getenv("USE_CACHE") == 1:
+        extracted_entries = load_json("yfinance_news.json")
+        if extracted_entries is None:
+            extracted_entries = []
+        tickerdata = load_json("yfinance_tickers.json")
+        if tickerdata is None:
+            tickerdata = []
+    else:
+        extracted_entries, tickerdata = fetchYFinance()
+
     extracted_entries, tickerdata = fetchYFinance()
     print(f"Fetched {len(extracted_entries)} news entries from YFinance.")
     print(f"Fetched {len(tickerdata)} ticker info from YFinance.")

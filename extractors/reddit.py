@@ -1,5 +1,7 @@
+import os
 import requests as r
 from concurrent.futures import ThreadPoolExecutor
+from typing import Optional
 
 from utils.file_utils import save_json, load_json
 
@@ -7,7 +9,7 @@ subreddits = ["CryptoCurrency", "ethfinance", "CryptoMarkets", "ethereum"]
 # r/ethereum has daily discussion posts
 
 
-def fetchSubreddit(subreddit, limit=10):
+def fetchSubreddit(subreddit, limit=10) -> list[dict]:
     url = f"https://www.reddit.com/r/{subreddit}/new.json?limit={limit}"
     headers = {"User-Agent": "Mozilla/5.0"}
     response = r.get(url, headers=headers)
@@ -21,7 +23,7 @@ def fetchSubreddit(subreddit, limit=10):
     return posts
 
 
-def fetchRedditPosts(subreddits, limit=10):
+def fetchRedditPosts(subreddits, limit=10) -> list[dict]:
     extracted_posts = []
     with ThreadPoolExecutor(max_workers=3) as executor:
         list_all_posts = (
@@ -45,11 +47,17 @@ def fetchRedditPosts(subreddits, limit=10):
     save_json("reddit_data.json", results)
     return results
 
-    # load from saved file
-    # results = load_json("reddit_data.json")
-    # return results
-
 
 def getRedditData():
-    all_posts = fetchRedditPosts(subreddits, limit=10)
-    return all_posts
+    all_posts: Optional[list[dict]] = []
+    if os.getenv("USE_CACHE") == 1:
+        all_posts = load_json("reddit_data.json")
+    else:
+        all_posts = fetchRedditPosts(subreddits, limit=10)
+
+    if all_posts is None:
+        all_posts = []
+        print("Could not fetch Reddit data")
+
+    print("Reddit data fetched")
+    print("Total posts fetched:", len(all_posts))

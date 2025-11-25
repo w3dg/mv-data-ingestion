@@ -34,12 +34,14 @@ def fetchNewsDataIO() -> Optional[list[dict]]:
     save_json("newsdata.json", extracted_entries)
     return extracted_entries
 
-    # contents = load_json("newsdata.json")
-    # return contents
-
 
 def getNewsData():
-    news = fetchNewsDataIO()
+    news: Optional[list[dict]] = None
+    if os.getenv("USE_CACHE") == 1:
+        news = load_json("newsdata.json")
+    else:
+        news = fetchNewsDataIO()
+
     if news is not None:
         print("newsdata.io fetched")
         print("Total articles fetched:", len(news))

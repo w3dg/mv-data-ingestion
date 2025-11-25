@@ -10,6 +10,7 @@ def save_json(filename, data):
     filepath = os.path.join(DATA_FOLDER, filename)
     with open(filepath, "w") as f:
         json.dump(data, f, indent=4)
+    convertToBQJSONFormat(filename, filename.replace(".json", "_bq.json"))
 
 
 def load_json(filename):
