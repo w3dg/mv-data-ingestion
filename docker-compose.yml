@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  data-ingestion-app:
+    build: .
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/market-volatility-sa.json
+      - NEWSDATA_API_KEY=${NEWSDATA_API_KEY}
+      - CRYPTOPANIC_API_KEY=${CRYPTOPANIC_API_KEY}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      - GCP_BQ_PROJECT_NAME=${GCP_BQ_PROJECT_NAME}
+      - GCP_BQ_DATASET_NAME=${GCP_BQ_DATASET_NAME}
+      - USE_CACHE=0
+    volumes:
+      - ./market-volatility-sa.json:/app/market-volatility-sa.json:ro   # mount local key file read-only
