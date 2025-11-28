@@ -19,7 +19,7 @@ def createTableIfNotExists(table_ref, schema):
     try:
         table = client.create_table(table)
         print(f"Created table {table.project}.{table.dataset_id}.{table.table_id}")
-    except Exception as e:
+    except Exception:
         print(
             f"Table {table.project}.{table.dataset_id}.{table.table_id} already exists, not creating again."
         )
