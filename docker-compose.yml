@@ -11,4 +11,4 @@ services:
       - GCP_BQ_DATASET_NAME=${GCP_BQ_DATASET_NAME}
       - USE_CACHE=0
     volumes:
-      - ./market-volatility-sa.json:/app/market-volatility-sa.json:ro   # mount local key file read-only
+      - ./market-volatility-sa.json:/app/market-volatility-sa.json:ro # mount local key file read-only
