@@ -7,7 +7,6 @@ from extractors.cryptopanic import getCryptoPanicData
 from extractors.newsdataio import getNewsData
 from extractors.reddit import getRedditData
 from extractors.yfinance import getYFinanceData
-from utils.file_utils import convertToBQJSONFormat
 
 load_dotenv()
 
