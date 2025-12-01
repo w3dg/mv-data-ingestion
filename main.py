@@ -14,42 +14,38 @@ load_dotenv()
 
 def main():
     print("Starting data extraction...\n")
+
     print("Fetching CoinTelegraph data:")
-    getCoinTelegraph()
+    ctdf = getCoinTelegraph()
+    if ctdf is not None:
+        bq.ingestCointelegraph(ctdf)
+
     print("\nFetching CoinDesk data:")
-    getCoinDesk()
+    cddf = getCoinDesk()
+    if cddf is not None:
+        bq.ingestCoindesk(cddf)
+
     print("\nFetching NewsData.io data:")
-    getNewsData()
+    nddf = getNewsData()
+    if nddf is not None:
+        bq.ingestNewsdata(nddf)
+
     print("\nFetching CryptoPanic data:")
-    getCryptoPanicData()
+    cpdf = getCryptoPanicData()
+    if cpdf is not None:
+        bq.ingestCryptopanic(cpdf)
+
     print("\nFetching YFinance data:")
-    getYFinanceData()
+    yfnewsdf, yftickerdf = getYFinanceData()
+    if yfnewsdf is not None:
+        bq.ingestYFinanceNews(yfnewsdf)
+    if yftickerdf is not None:
+        bq.ingestYFinanceTickers(yftickerdf)
+
     print("\nFetching Reddit data:")
-    getRedditData()
-
-    filenames = [
-        "coindesk",
-        "cointelegraph",
-        "cryptopanic",
-        "newsdata",
-        "reddit_data",
-        "yfinance_news",
-        "yfinance_tickers",
-    ]
-
-    for filename in filenames:
-        infile = f"{filename}.json"
-        outfile = f"{filename}_bq.json"
-        convertToBQJSONFormat(infile, outfile)
-        print("converted ", infile, " to flat json format in ", outfile)
-
-    bq.ingestCoindesk()
-    bq.ingestCointelegraph()
-    bq.ingestCryptopanic()
-    bq.ingestNewsdata()
-    bq.ingestReddit()
-    bq.ingestYFinanceNews()
-    bq.ingestYFinanceTickers()
+    rdtdf = getRedditData()
+    if rdtdf is not None:
+        bq.ingestReddit(rdtdf)
 
 
 if __name__ == "__main__":

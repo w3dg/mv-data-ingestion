@@ -1,5 +1,8 @@
 import os
+from datetime import datetime, timezone
+from typing import Optional, Tuple
 
+import pandas as pd
 import yfinance as yf
 
 from utils.file_utils import load_json, save_json
@@ -33,6 +36,7 @@ def fetchYFinance() -> tuple[list, list]:
                 extracted_entries.append(extracted_entry)
             tickerdata.append(
                 {
+                    "date": str(datetime.now(timezone.utc)),
                     "ticker": ticker,
                     "regularMarketChange": info.get("regularMarketChange"),
                     "exchange": info.get("exchange"),
@@ -63,17 +67,19 @@ def fetchYFinance() -> tuple[list, list]:
     return extracted_entries, tickerdata
 
 
-def getYFinanceData():
+def getYFinanceData() -> Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]:
+    yfnewsdf, yftickerdf = None, None
+    extracted_entries: Optional[list[dict]] = None
+    tickerdata: Optional[list[dict]] = None
+
     if os.getenv("USE_CACHE") == 1:
         extracted_entries = load_json("yfinance_news.json")
-        if extracted_entries is None:
-            extracted_entries = []
         tickerdata = load_json("yfinance_tickers.json")
-        if tickerdata is None:
-            tickerdata = []
     else:
         extracted_entries, tickerdata = fetchYFinance()
 
-    extracted_entries, tickerdata = fetchYFinance()
-    print(f"Fetched {len(extracted_entries)} news entries from YFinance.")
-    print(f"Fetched {len(tickerdata)} ticker info from YFinance.")
+    yfnewsdf, yftickerdf = pd.DataFrame(extracted_entries), pd.DataFrame(tickerdata)
+    print(f"Fetched {len(yfnewsdf)} news entries from YFinance.")
+    print(f"Fetched {len(yftickerdf)} ticker info from YFinance.")
+
+    return yfnewsdf, yftickerdf

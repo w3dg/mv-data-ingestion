@@ -1,6 +1,7 @@
 import os
 from typing import Optional
 
+import pandas as pd
 import requests as r
 
 from utils.file_utils import load_json, save_json
@@ -15,7 +16,6 @@ def fetchCryptoPanic() -> Optional[list[dict]]:
         f"https://cryptopanic.com/api/v1/posts/?auth_token={CRYPTOPANIC_API_KEY}"
     )
 
-    # Uncomment the following lines to fetch from API
     extracted_entries = []
     res = r.get(CRYPTOPANIC_URL)
     if res.status_code != 200:
@@ -41,13 +41,17 @@ def fetchCryptoPanic() -> Optional[list[dict]]:
     return extracted_entries
 
 
-def getCryptoPanicData():
+def getCryptoPanicData() -> Optional[pd.DataFrame]:
     newsjson: Optional[list[dict]] = None
+    cpdf: Optional[pd.Dataframe] = None
+
     if os.getenv("USE_CACHE") == 1:
         newsjson = load_json("cryptopanic.json")
     else:
         newsjson = fetchCryptoPanic()
 
     if newsjson is not None:
-        print("cryptopanic data fetched")
-        print(len(newsjson), "items fetched")
+        cpdf = pd.DataFrame(newsjson)
+        print(len(cpdf), "items fetched from cryptopanic")
+
+    return cpdf

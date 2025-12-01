@@ -1,6 +1,7 @@
 import os
 from typing import Optional
 
+import pandas as pd
 import requests as r
 
 from utils.file_utils import load_json, save_json
@@ -36,13 +37,17 @@ def fetchNewsDataIO() -> Optional[list[dict]]:
     return extracted_entries
 
 
-def getNewsData():
+def getNewsData() -> Optional[pd.DataFrame]:
     news: Optional[list[dict]] = None
+    newsdf = None
+
     if os.getenv("USE_CACHE") == 1:
         news = load_json("newsdata.json")
     else:
         news = fetchNewsDataIO()
 
     if news is not None:
-        print("newsdata.io fetched")
-        print("Total articles fetched:", len(news))
+        newsdf = pd.DataFrame(news)
+        print("Total articles from NewsData.io fetched:", len(newsdf))
+
+    return newsdf

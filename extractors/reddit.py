@@ -2,6 +2,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 
+import pandas as pd
 import requests as r
 
 from utils.file_utils import load_json, save_json
@@ -49,16 +50,20 @@ def fetchRedditPosts(subreddits, limit=10) -> list[dict]:
     return results
 
 
-def getRedditData():
-    all_posts: Optional[list[dict]] = []
+def getRedditData() -> Optional[pd.DataFrame]:
+    rdtdf = None
+    all_posts: Optional[list[dict]] = None
+
     if os.getenv("USE_CACHE") == 1:
         all_posts = load_json("reddit_data.json")
     else:
         all_posts = fetchRedditPosts(subreddits, limit=10)
 
-    if all_posts is None:
-        all_posts = []
-        print("Could not fetch Reddit data")
+    if all_posts is not None and len(all_posts) > 0:
+        rdtdf = pd.DataFrame(all_posts)
+        print("Reddit data fetched")
+        print("Total posts fetched:", len(rdtdf))
+    else:
+        print("Could not fetch reddit data")
 
-    print("Reddit data fetched")
-    print("Total posts fetched:", len(all_posts))
+    return rdtdf

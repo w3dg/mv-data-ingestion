@@ -17,7 +17,7 @@ cointelegraph_schema = [
 ]
 
 cryptopanic_schema = [
-    bigquery.SchemaField("id", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("id", "INTEGER", mode="REQUIRED"),
     bigquery.SchemaField("title", "STRING", mode="REQUIRED"),
     bigquery.SchemaField("description", "STRING", mode="NULLABLE"),
     bigquery.SchemaField("published_at", "STRING", mode="REQUIRED"),
@@ -56,6 +56,7 @@ yfinance_news_schema = [
 ]
 
 yfinance_tickers_schema = [
+    bigquery.SchemaField("date", "STRING", mode="REQUIRED"),
     bigquery.SchemaField("ticker", "STRING", mode="REQUIRED"),
     bigquery.SchemaField("regularMarketChange", "FLOAT64", mode="REQUIRED"),
     bigquery.SchemaField("exchange", "STRING", mode="REQUIRED"),

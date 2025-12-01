@@ -1,14 +1,14 @@
 import os
 from typing import Optional
 
+import pandas as pd
 import requests as r
-from fastfeedparser import FastFeedParserDict
 from fastfeedparser import parse as fastfeedparse
 
 from utils.file_utils import load_json, save_json
 
 
-def fetchCoinDeskNews() -> Optional[FastFeedParserDict]:
+def fetchCoinDeskNews() -> Optional[list[dict]]:
     COIN_DESK_URL = "https://www.coindesk.com/arc/outboundfeeds/rss"
     res = r.get(COIN_DESK_URL)
     if res.status_code != 200:
@@ -27,16 +27,19 @@ def fetchCoinDeskNews() -> Optional[FastFeedParserDict]:
         }
         extracted_entries.append(extracted_entry)
     save_json("coindesk.json", extracted_entries)
-    return myfeed
+    return extracted_entries
 
 
-def getCoinDesk():
-    ctnews = None
+def getCoinDesk() -> Optional[pd.DataFrame]:
+    cdnews = None
+    cddf = None
     if os.getenv("USE_CACHE") == 1:
-        ctnews: Optional[FastFeedParserDict] = load_json("coindesk.json")
+        cdnews: Optional[list[dict]] = load_json("coindesk.json")
     else:
-        ctnews = fetchCoinDeskNews()
+        cdnews = fetchCoinDeskNews()
 
-    if ctnews is not None:
-        news_entries = ctnews["entries"]
-        print(f"{len(news_entries)} items from coindesk fetched")
+    if cdnews is not None:
+        cddf = pd.DataFrame(cdnews)
+        print(f"{len(cddf)} items from coindesk fetched")
+
+    return cddf
