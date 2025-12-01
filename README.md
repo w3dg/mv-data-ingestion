@@ -51,7 +51,7 @@ Folder structure
 └── uv.lock
 ```
 
-#### Data Sources 
+#### Data Sources
 
 1. Coindesk news (RSS feed)
 2. Cointelegraph news (RSS feed)
@@ -118,7 +118,9 @@ services:
 
 ### Login to gcloud cli
 
+```
 gcloud auth login
+```
 
 ### Build latest with tag
 
@@ -142,9 +144,12 @@ asia-south1-docker.pkg.dev/market-volatility/market-volatility-ingestion/ingesto
 ```
 
 ### Describe the artifact registry
+
+```
 gcloud artifacts repositories describe market-volatility-ingestion \
     --project=market-volatility \
     --location=asia-south1
+```
 
 ### Push container to artifact registry
 
