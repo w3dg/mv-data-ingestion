@@ -6,13 +6,15 @@ from dotenv import load_dotenv
 from google.api_core.exceptions import GoogleAPICallError
 from google.cloud import bigquery
 
-import gcloud.schemas as schemas
+from gcloud.tableconfig import getTableConfig
 
 load_dotenv()
 
 client = bigquery.Client(os.getenv("GCP_BQ_PROJECT_NAME", "market-volatility"))
 dataset_name = os.getenv("GCP_BQ_DATASET_NAME", "sources")
 dataset_ref = client.dataset(dataset_name)
+
+TABLE_CONFIG = getTableConfig()
 
 
 def createTableIfNotExists(table_ref, schema):
@@ -46,46 +48,69 @@ def execute_load_job(
         print("Ingest API call for loading DataFrame failed:", e)
 
 
+def execute_load_job_staging(
+    df: pd.DataFrame,
+    table_ref: bigquery.TableReference,
+    schema,
+):
+    job_config = bigquery.LoadJobConfig(
+        write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
+        schema=schema,
+    )
+    job = client.load_table_from_dataframe(df, table_ref, job_config=job_config)
+
+    try:
+        job.result()  # Wait for the job to complete
+        print(f"Loaded {job.output_rows} rows into staging table {table_ref.path}.")
+    except TimeoutError as e:
+        print("Ingest Job for loading DataFrame timed out:", e)
+    except GoogleAPICallError as e:
+        print("Ingest API call for loading DataFrame failed:", e)
+
+
+def ingestTable(df: pd.DataFrame, table_name: str):
+    if table_name not in TABLE_CONFIG:
+        raise Exception(
+            "Unknown table name provided for ingestion. Table details not known."
+        )
+
+    table = TABLE_CONFIG[table_name]
+
+    staging_table_ref = dataset_ref.table(table["staging_table"])
+    createTableIfNotExists(staging_table_ref, schema=table["schema"])
+    execute_load_job_staging(df, staging_table_ref, table["schema"])
+
+    table_ref = dataset_ref.table(table["table"])
+    createTableIfNotExists(table_ref, schema=table["schema"])
+    # TODO: upsert records between staging and final using merge query
+
+
 def ingestCoindesk(df: pd.DataFrame):
-    table_ref = dataset_ref.table("coindesk")
-    createTableIfNotExists(table_ref, schema=schemas.coindesk_schema)
-    execute_load_job(df, table_ref, schemas.coindesk_schema)
+    ingestTable(df, "coindesk")
 
 
 def ingestCointelegraph(df: pd.DataFrame):
-    table_ref = dataset_ref.table("cointelegraph")
-    createTableIfNotExists(table_ref, schema=schemas.cointelegraph_schema)
-    execute_load_job(df, table_ref, schemas.cointelegraph_schema)
+    ingestTable(df, "cointelegraph")
 
 
 def ingestCryptopanic(df: pd.DataFrame):
-    table_ref = dataset_ref.table("cryptopanic")
-    createTableIfNotExists(table_ref, schema=schemas.cryptopanic_schema)
-    execute_load_job(df, table_ref, schemas.cryptopanic_schema)
+    ingestTable(df, "cryptopanic")
 
 
 def ingestNewsdata(df: pd.DataFrame):
-    table_ref = dataset_ref.table("newsdata")
-    createTableIfNotExists(table_ref, schema=schemas.newsdata_schema)
-    execute_load_job(df, table_ref, schemas.newsdata_schema)
+    ingestTable(df, "newsdata")
 
 
 def ingestReddit(df: pd.DataFrame):
-    table_ref = dataset_ref.table("reddit")
-    createTableIfNotExists(table_ref, schema=schemas.reddit_schema)
-    execute_load_job(df, table_ref, schemas.reddit_schema)
+    ingestTable(df, "reddit")
 
 
 def ingestYFinanceNews(df: pd.DataFrame):
-    table_ref = dataset_ref.table("yfinance_news")
-    createTableIfNotExists(table_ref, schema=schemas.yfinance_news_schema)
-    execute_load_job(df, table_ref, schemas.yfinance_news_schema)
+    ingestTable(df, "yfinance_news")
 
 
 def ingestYFinanceTickers(df: pd.DataFrame):
-    table_ref = dataset_ref.table("yfinance_tickers")
-    createTableIfNotExists(table_ref, schema=schemas.yfinance_tickers_schema)
-    execute_load_job(df, table_ref, schemas.yfinance_tickers_schema)
+    ingestTable(df, "yfinance_tickers")
 
 
 def listAllTables():
