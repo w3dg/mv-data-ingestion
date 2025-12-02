@@ -132,6 +132,13 @@ docker build -t ingestor:latest .
 
 ```sh
 $ docker image ls
+# get the ID
+```
+
+Tag the image against the artifacts repository
+
+For eg.
+```sh
 $ docker tag <image-id-eg-3e4e8eb736e9> asia-south1-docker.pkg.dev/market-volatility/market-volatility-ingestion/ingestor
 ```
 
@@ -154,10 +161,28 @@ gcloud artifacts repositories describe market-volatility-ingestion \
 ### Push container to artifact registry
 
 ```sh
-$ docker push asia-south1-docker.pkg.dev/market-volatility/market-volatility-ingestion/ingestor
+$ docker push asia-south1-docker.pkg.dev/market-volatility/market-volatility-ingestion/ingestor:latest
+# mark as latest tag
 ```
 
 Select the image from the registry now in the cloud run job dashboard.
+
+Update the cloud run job to update to the latest tag at this moment
+
+```
+gcloud run jobs update data-sources-ingestion \
+  --image=asia-south1-docker.pkg.dev/market-volatility/market-volatility-ingestion/ingestor:latest \
+  --region=asia-south1 \
+  --project=market-volatility
+```
+
+Optionally, Run the job
+
+```
+gcloud run jobs execute data-sources-ingestion \
+  --region=asia-south1 \
+  --project=market-volatility
+ ```
 
 ### Crontab for the scheduler
 

@@ -13,11 +13,19 @@ subreddits = ["CryptoCurrency", "ethfinance", "CryptoMarkets", "ethereum"]
 
 def fetchSubreddit(subreddit, limit=10) -> list[dict]:
     url = f"https://www.reddit.com/r/{subreddit}/new.json?limit={limit}"
-    headers = {"User-Agent": "Mozilla/5.0"}
+    headers = {
+        "User-Agent": os.getenv(
+            "REDDIT_USER_AGENT", "SentiVol/0.1 (contact: test@example.com)"
+        )
+    }
     response = r.get(url, headers=headers)
 
     if response.status_code != 200:
         print(f"Failed to fetch data from r/{subreddit}: {response.status_code}")
+        if response.status_code == 403:
+            print(
+                f"Got response Forbidden from reddit, last tried with UA: {headers['User-Agent']}"
+            )
         return []
 
     data = response.json()

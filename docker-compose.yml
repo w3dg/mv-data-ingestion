@@ -9,6 +9,7 @@ services:
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
       - GCP_BQ_PROJECT_NAME=${GCP_BQ_PROJECT_NAME}
       - GCP_BQ_DATASET_NAME=${GCP_BQ_DATASET_NAME}
+      - REDDIT_USER_AGENT=${REDDIT_USER_AGENT}
       - USE_CACHE=0
     volumes:
       - ./market-volatility-sa.json:/app/market-volatility-sa.json:ro # mount local key file read-only
