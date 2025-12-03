@@ -1,4 +1,5 @@
 import os
+import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 
@@ -12,24 +13,38 @@ subreddits = ["CryptoCurrency", "ethfinance", "CryptoMarkets", "ethereum"]
 
 
 def fetchSubreddit(subreddit, limit=10) -> list[dict]:
-    url = f"https://www.reddit.com/r/{subreddit}/new.json?limit={limit}"
     headers = {
+        "origin": "https://reddit.com",
         "User-Agent": os.getenv(
-            "REDDIT_USER_AGENT", "SentiVol/0.1 (contact: test@example.com)"
-        )
+            "REDDIT_USER_AGENT",
+            "python:Volaility-Sentiment:v0.1 (by /u/Several-Winter-2059/)",
+        ),
     }
-    response = r.get(url, headers=headers)
+    url = f"https://cors-anywhere.com/https://reddit.com/r/{subreddit}/new.json"
+    retries = 3
+    posts = []
 
-    if response.status_code != 200:
-        print(f"Failed to fetch data from r/{subreddit}: {response.status_code}")
-        if response.status_code == 403:
-            print(
-                f"Got response Forbidden from reddit, last tried with UA: {headers['User-Agent']}"
-            )
+    while retries > 0:
+        response = r.get(url, headers=headers)
+
+        if response.status_code != 200:
+            print("Failed to fetch data, will retry")
+            print(f"Failed to fetch data from r/{subreddit}: {response.status_code}")
+            if response.status_code == 403:
+                print("Got response Forbidden from reddit, retrying")
+            retries -= 1
+            time.sleep(5)
+        else:
+            resjson = response.json()
+            data = resjson.get("data", {})
+            posts = data.get("children", [])
+            print(f"Fetched {len(posts)} posts from reddit")
+            break
+
+    if retries == 0 and len(posts) == 0:
+        print("Failed to get reddit data after 3 retries")
         return []
 
-    data = response.json()
-    posts = data.get("data", {}).get("children", [])
     return posts
 
 

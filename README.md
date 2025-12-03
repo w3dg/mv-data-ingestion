@@ -95,7 +95,7 @@ Transforming raw data to structured format and saving the extracted data in JSON
 
 ---
 
-Built an image from the repo using the following [Dockerfile](./Dcoekrfile)
+Built an image from the repo using the following [Dockerfile](./Dockerfile)
 
 ```Dockerfile
 version: "3.8"
@@ -139,6 +139,8 @@ Tag the image against the artifacts repository
 
 For eg.
 ```sh
+$ docker tag ingestor:latest asia-south1-docker.pkg.dev/market-volatility/market-volatility-ingestion/ingestor
+$ # or
 $ docker tag <image-id-eg-3e4e8eb736e9> asia-south1-docker.pkg.dev/market-volatility/market-volatility-ingestion/ingestor
 ```
 
@@ -153,7 +155,7 @@ asia-south1-docker.pkg.dev/market-volatility/market-volatility-ingestion/ingesto
 ### Describe the artifact registry
 
 ```
-gcloud artifacts repositories describe market-volatility-ingestion \
+$ gcloud artifacts repositories describe market-volatility-ingestion \
     --project=market-volatility \
     --location=asia-south1
 ```
@@ -169,8 +171,8 @@ Select the image from the registry now in the cloud run job dashboard.
 
 Update the cloud run job to update to the latest tag at this moment
 
-```
-gcloud run jobs update data-sources-ingestion \
+```sh
+$ gcloud run jobs update data-sources-ingestion \
   --image=asia-south1-docker.pkg.dev/market-volatility/market-volatility-ingestion/ingestor:latest \
   --region=asia-south1 \
   --project=market-volatility
@@ -178,8 +180,8 @@ gcloud run jobs update data-sources-ingestion \
 
 Optionally, Run the job
 
-```
-gcloud run jobs execute data-sources-ingestion \
+```sh
+$ gcloud run jobs execute data-sources-ingestion \
   --region=asia-south1 \
   --project=market-volatility
  ```
